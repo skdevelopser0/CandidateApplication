@@ -1,21 +1,22 @@
 trigger:
   branches:
     include:
-      - master   # The branch you want to trigger the pipeline
+      - master   # Trigger the pipeline on changes to the master branch
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'   # You can also use 'ubuntu-latest' if preferred
 
 steps:
 # 1. Checkout the repository
 - task: Checkout@1
   displayName: 'Checkout repository'
   
-# 2. Install .NET SDK (specifically .NET 6.0 since you're working with Azure Functions that require .NET 6)
+# 2. Install .NET SDK (for .NET 6.0, used by Azure Functions)
 - task: UseDotNet@2
+  displayName: 'Install .NET SDK'
   inputs:
     packageType: 'sdk'
-    version: '6.x.x'  # Use the latest available .NET 6 version
+    version: '6.x.x'  # Ensures the latest available .NET 6 version is used
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 # 3. Restore dependencies
@@ -23,7 +24,7 @@ steps:
   displayName: 'Restore .NET dependencies'
   inputs:
     command: 'restore'
-    projects: '**/*.csproj'  # This ensures that it restores all projects in your solution
+    projects: '**/*.csproj'  # Restores all .NET projects in the solution
 
 # 4. Build the solution
 - task: DotNetCoreCLI@2
@@ -31,7 +32,7 @@ steps:
   inputs:
     command: 'build'
     projects: '**/*.sln'
-    arguments: '--configuration Release --no-restore'
+    arguments: '--configuration Release --no-restore'  # Builds the solution in Release mode
 
 # 5. Publish the function app to a folder
 - task: DotNetCoreCLI@2
@@ -40,7 +41,7 @@ steps:
     command: 'publish'
     projects: '**/*.csproj'
     publishWebProjects: false
-    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish_output --no-restore'
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish_output --no-restore'  # Publish output goes to a directory
 
 # 6. Archive the published app (create a zip file for deployment)
 - task: ArchiveFiles@2
@@ -53,11 +54,10 @@ steps:
     replaceExistingArchive: true
 
 # 7. Deploy to Azure Function App
-- task: AzureFunctionApp@1
+- task: AzureFunctionApp@2
   displayName: 'Deploy Azure Function App'
   inputs:
-    azureSubscription: 'AzureServiceConnection'
+    azureSubscription: 'AzureServiceConnection'  # Your Azure service connection name
     appType: 'functionApp'
-    appName: 'candidateappplication'
-    package: '$(Build.ArtifactStagingDirectory)/12345.zip'
-
+    appName: 'candidateappplication'  # Your Azure Function App name
+    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'  # Zip file to be deployed
