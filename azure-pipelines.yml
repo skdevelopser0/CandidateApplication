@@ -56,7 +56,7 @@ steps:
 - task: AzureFunctionApp@1
   displayName: 'Deploy Azure Function App'
   inputs:
-    azureSubscription: 'my-azure-connection'  # Replace with your service connection name
+    azureSubscription: 'AzureServiceConnection'  # Replace with your service connection name
     appType: 'functionApp'
     appName: 'candidateappplication'  # Replace with your Azure Function App name
     package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
