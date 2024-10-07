@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - main   # The branch you want to trigger the pipeline
+      - master   # The branch you want to trigger the pipeline
 
 pool:
   vmImage: 'windows-latest'
