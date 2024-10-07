@@ -22,5 +22,5 @@ steps:
   inputs:
     azureSubscription: '5c9d9bfd-016e-4902-b3ca-deacb3e3df8a'
     appType: 'functionApp'
-    appName: 'skillparsing'
+    appName: 'candidateappplication'
     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
