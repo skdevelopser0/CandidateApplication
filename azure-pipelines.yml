@@ -1,1 +1,64 @@
+trigger:
+  branches:
+    include:
+      - main   # The branch you want to trigger the pipeline
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+# 1. Checkout the repository
+- task: Checkout@1
+  displayName: 'Checkout repository'
+  
+# 2. Install .NET SDK (specifically .NET 6.0 since you're working with Azure Functions that require .NET 6)
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.x.x'  # Use the latest available .NET 6 version
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+# 3. Restore dependencies
+- task: DotNetCoreCLI@2
+  displayName: 'Restore .NET dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'  # This ensures that it restores all projects in your solution
+
+# 4. Build the solution
+- task: DotNetCoreCLI@2
+  displayName: 'Build Solution'
+  inputs:
+    command: 'build'
+    projects: '**/*.sln'
+    arguments: '--configuration Release --no-restore'
+
+# 5. Publish the function app to a folder
+- task: DotNetCoreCLI@2
+  displayName: 'Publish function app'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: false
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/publish_output --no-restore'
+
+# 6. Archive the published app (create a zip file for deployment)
+- task: ArchiveFiles@2
+  displayName: 'Archive function app'
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish_output'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
+# 7. Deploy to Azure Function App
+- task: AzureFunctionApp@1
+  displayName: 'Deploy Azure Function App'
+  inputs:
+    azureSubscription: 'my-azure-connection'  # Replace with your service connection name
+    appType: 'functionApp'
+    appName: 'candidateappplication'  # Replace with your Azure Function App name
+    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+
 
