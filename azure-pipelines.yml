@@ -4,7 +4,7 @@ trigger:
       - master   # The branch you want to trigger the pipeline
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 steps:
 # 1. Checkout the repository
@@ -56,9 +56,8 @@ steps:
 - task: AzureFunctionApp@1
   displayName: 'Deploy Azure Function App'
   inputs:
-    azureSubscription: 'AzureServiceConnection'  # Replace with your service connection name
+    azureSubscription: 'AzureServiceConnection'
     appType: 'functionApp'
-    appName: 'candidateappplication'  # Replace with your Azure Function App name
-    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-
+    appName: 'candidateappplication'
+    package: '$(Build.ArtifactStagingDirectory)/12345.zip'
 
